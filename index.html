@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Provisorium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Gluten:wght@400;600;800&display=swap">
+<link rel="stylesheet" href="./src/hud.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Cpath d=%22M2 1v14M14 1v14M2 5h12M2 10h12M2 5l12 5%22 stroke=%22%23d4553a%22 stroke-width=%221.6%22 fill=%22none%22/%3E%3C/svg%3E">
+</head>
+<body>
+<canvas id="view"></canvas>
+<!-- dark foreground foliage that frames the picture, drawn by hud.js -->
+<canvas id="frame" aria-hidden="true"></canvas>
+
+<!-- reusable inked icons -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-heart" viewBox="0 0 32 30"><path d="M16 27C6 20 2.5 14.5 2.5 9.5 2.5 5.4 5.6 2.5 9.3 2.5c2.8 0 5 1.6 6.7 4 1.7-2.4 3.9-4 6.7-4 3.7 0 6.8 2.9 6.8 7 0 5-3.5 10.5-13.5 17.5z" stroke="#2a2140" stroke-width="2.6" stroke-linejoin="round"/><path d="M7.5 7.5c1-1.2 2.6-1.4 3.6-.8" stroke="#fbf1dc" stroke-width="2" stroke-linecap="round" fill="none" class="shine"/></symbol>
+    <symbol id="i-building" viewBox="0 0 32 32"><path d="M3 29V13l13-8 13 8v16z" fill="#f6e6c4" stroke="#2a2140" stroke-width="2.4" stroke-linejoin="round"/><path d="M8 29v-7h5v7M19 22h5v4h-5zM8 15h5v4H8zM19 15h5v4h-5z" fill="#3b4a66" stroke="#2a2140" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-scaffold" viewBox="0 0 32 32"><g stroke="#2a2140" stroke-width="2.6" stroke-linecap="round" fill="none"><path d="M6 3v27M26 3v27M6 9h20M6 19h20M6 29h20M6 9l20 10M26 19 6 29"/></g><g stroke="#c98a4b" stroke-width="2.6"><path d="M7 18.5h18M7 8.5h18"/></g></symbol>
+    <symbol id="i-wrench" viewBox="0 0 32 32"><path d="M20.5 3.5a7 7 0 0 0-6.8 8.9L4.2 21.9a2.8 2.8 0 0 0 4 4l9.5-9.5a7 7 0 0 0 8.9-6.8l-4 4-4.4-.9-.9-4.4z" fill="#a9b3c9" stroke="#2a2140" stroke-width="2.4" stroke-linejoin="round"/></symbol>
+    <symbol id="i-snail" viewBox="0 0 32 32"><path d="M3 25h22c2 0 3.5-1.5 3.5-3.5V18" stroke="#2a2140" stroke-width="2.4" fill="#a8c46c" stroke-linecap="round"/><circle cx="15" cy="17" r="7.5" fill="#e3c27a" stroke="#2a2140" stroke-width="2.4"/><path d="M15 17m-3 0a3 3 0 1 0 3-3" stroke="#2a2140" stroke-width="2" fill="none"/><path d="M27 18l1.5-5M29.5 18.5l2-4" stroke="#2a2140" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-boot" viewBox="0 0 32 32"><path d="M9 3h9v13l9 4c2 1 2.5 3 2.5 5v2H4V20c0-3 2-4 5-4z" fill="#6b4a35" stroke="#2a2140" stroke-width="2.4" stroke-linejoin="round"/><path d="M4 23h25.5" stroke="#2a2140" stroke-width="2.2"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 32 32"><path d="M18 2 6 18h8l-3 12 15-17h-9z" fill="#e8b23a" stroke="#2a2140" stroke-width="2.4" stroke-linejoin="round"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#f6e6c4" stroke="#2a2140" stroke-width="2.4"/><path d="M16 9v7l5 3" stroke="#2a2140" stroke-width="2.4" stroke-linecap="round" fill="none"/></symbol>
+    <symbol id="i-sound" viewBox="0 0 32 32"><path d="M4 12h6l8-7v22l-8-7H4z" fill="#f6e6c4" stroke="#2a2140" stroke-width="2.4" stroke-linejoin="round"/><path class="waves" d="M22 11c2 3 2 7 0 10M25.5 8c3.5 4.5 3.5 11.5 0 16" stroke="#f6e6c4" stroke-width="2.4" stroke-linecap="round" fill="none"/></symbol>
+    <symbol id="i-crew" viewBox="0 0 32 32"><path d="M4 21c0-7 5-12 12-12s12 5 12 12z" fill="#e8b23a" stroke="#2a2140" stroke-width="2.4" stroke-linejoin="round"/><path d="M2 22h28" stroke="#2a2140" stroke-width="3" stroke-linecap="round"/><path d="M16 9v6" stroke="#2a2140" stroke-width="2.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 32 32"><path d="M7 30V3" stroke="#2a2140" stroke-width="2.6" stroke-linecap="round"/><path d="M8 4h17l-4 6 4 6H8z" fill="#d9573b" stroke="#2a2140" stroke-width="2.4" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<div id="hud" hidden>
+  <!-- top-left: hearts + inked counters, floating over the picture -->
+  <section class="status">
+    <div class="hearts" id="hearts" title="Nerves">
+      <svg class="heart"><use href="#i-heart"/></svg><svg class="heart"><use href="#i-heart"/></svg><svg class="heart"><use href="#i-heart"/></svg><svg class="heart"><use href="#i-heart"/></svg><svg class="heart"><use href="#i-heart"/></svg>
+      <span class="mood" id="valMood">calm</span>
+    </div>
+    <div class="counter" title="Building left standing"><svg><use href="#i-building"/></svg><b id="valIntegrity">100%</b><i class="track"><i id="barIntegrity"></i></i></div>
+    <div class="counter" title="Scaffold bays"><svg><use href="#i-scaffold"/></svg><span class="x">×</span><b id="valBays">0</b></div>
+    <div class="counter" title="Workers on the job"><svg><use href="#i-crew"/></svg><span class="x">×</span><b id="valCrew">1</b></div>
+    <div class="counter" title="Dismantling attempts"><svg><use href="#i-wrench"/></svg><span class="x">×</span><b id="valAttempts">0</b></div>
+    <div class="tag stage">
+      <div class="stage-no" id="stageNo">Stage 1 / 5</div>
+      <div class="stage-name" id="stageName">Order</div>
+      <p class="hint" id="stageHint"></p>
+    </div>
+  </section>
+
+  <!-- top-right: inventory-style slots -->
+  <section class="slots">
+    <div class="slot" id="tempo" title="Scaffold tempo">
+      <svg class="slot-icon" id="tempoIcon"><use href="#i-pause"/></svg>
+      <span class="slot-val" id="tempoVal">×1.0</span>
+      <span class="slot-tab" id="tempoMode">waiting</span>
+    </div>
+    <div class="slot" title="Stage">
+      <svg class="slot-icon"><use href="#i-flag"/></svg>
+      <span class="slot-val" id="stageSlot">1/5</span>
+      <span class="slot-tab">stage</span>
+    </div>
+    <button class="slot mute" id="mute" type="button" aria-pressed="false" title="Mute (M)">
+      <svg class="slot-icon"><use href="#i-sound"/></svg>
+      <span class="slot-val" id="muteVal">on</span>
+      <span class="slot-tab">M</span>
+    </button>
+  </section>
+
+  <div class="prompt" id="prompt" hidden><kbd>E</kbd> dismantle</div>
+  <div class="banner" id="banner" hidden><small id="bannerNo"></small><strong id="bannerName"></strong></div>
+
+  <section class="keys" id="keys">
+    <div><kbd>←↑↓→</kbd> move</div>
+    <div><kbd>Shift</kbd> run · scaffold speeds up</div>
+    <div><kbd>Ctrl</kbd> creep · scaffold slows down</div>
+    <div><kbd>Space</kbd> jump · <kbd>E</kbd> dismantle</div>
+    <div><kbd>M</kbd> mute · <kbd>H</kbd> hide · drag to orbit</div>
+  </section>
+</div>
+
+<!-- speech bubbles, positioned over the workers' heads every frame -->
+<div id="bubbles" aria-live="polite"></div>
+
+<div class="overlay" id="intro">
+  <div class="card">
+    <svg class="card-icon"><use href="#i-scaffold"/></svg>
+    <h1>Provisorium</h1>
+    <p class="sub">Temporary structures outlast permanent ones.</p>
+    <p>Hauptgebäude, Bauhaus-Universität Weimar. One bit of scaffolding is left on the facade. Your job is to take it down. How hard can it be?</p>
+    <ul>
+      <li><kbd>←↑↓→</kbd> walk &nbsp; <kbd>Shift</kbd> run &nbsp; <kbd>Ctrl</kbd> creep</li>
+      <li><kbd>Space</kbd> jump &nbsp; <kbd>E</kbd> dismantle the bay in front of you</li>
+    </ul>
+    <p class="small">Sound starts once you click or press a key. <kbd>M</kbd> mutes it.</p>
+    <button id="start" type="button">Clock in</button>
+  </div>
+</div>
+
+<div class="overlay" id="end" hidden>
+  <div class="card">
+    <svg class="card-icon"><use href="#i-building"/></svg>
+    <h1 id="endTitle">Aftermath</h1>
+    <p class="sub" id="endSub">The temporary structure outlasted the permanent one.</p>
+    <p class="quote" id="endQuote">“They don't pay us enough for this.”</p>
+    <p id="endStats"></p>
+    <p class="small">Every shift goes differently. Press <kbd>R</kbd> to start a new one, or keep looking around.</p>
+    <button id="restart" type="button">New shift</button>
+    <button id="stay" type="button" class="ghost">Keep looking</button>
+  </div>
+</div>
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
